@@ -1,0 +1,4 @@
+#!/bin/sh
+cat >/dev/null
+# always required for javadocs
+echo jpackage-utils
