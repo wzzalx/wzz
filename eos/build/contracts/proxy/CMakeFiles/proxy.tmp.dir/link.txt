@@ -1,0 +1,1 @@
+/opt/rh/devtoolset-7/root/usr/bin/g++   -Wall -fno-builtin-memcmp -O3 -DNDEBUG   CMakeFiles/proxy.tmp.dir/proxy.cpp.o  -o proxy.tmp 

@@ -1,0 +1,1 @@
+/opt/rh/devtoolset-7/root/usr/bin/g++   -Wall -fno-builtin-memcmp -O3 -DNDEBUG   CMakeFiles/eosio.msig.tmp.dir/eosio.msig.cpp.o  -o eosio.msig.tmp 

@@ -1,0 +1,2 @@
+/opt/rh/devtoolset-7/root/usr/bin/ar qc ../../lib/libwasm.a  CMakeFiles/wasm.dir/literal.cpp.o CMakeFiles/wasm.dir/wasm.cpp.o CMakeFiles/wasm.dir/wasm-binary.cpp.o CMakeFiles/wasm.dir/wasm-io.cpp.o CMakeFiles/wasm.dir/wasm-s-parser.cpp.o CMakeFiles/wasm.dir/wasm-type.cpp.o
+/opt/rh/devtoolset-7/root/usr/bin/ranlib ../../lib/libwasm.a

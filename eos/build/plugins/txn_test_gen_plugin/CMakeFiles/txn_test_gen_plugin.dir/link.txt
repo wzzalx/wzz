@@ -1,0 +1,2 @@
+/opt/rh/devtoolset-7/root/usr/bin/ar qc libtxn_test_gen_plugin.a  CMakeFiles/txn_test_gen_plugin.dir/txn_test_gen_plugin.cpp.o
+/opt/rh/devtoolset-7/root/usr/bin/ranlib libtxn_test_gen_plugin.a

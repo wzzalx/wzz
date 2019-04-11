@@ -1,0 +1,2 @@
+/opt/rh/devtoolset-7/root/usr/bin/ar qc libhistory_plugin.a  CMakeFiles/history_plugin.dir/history_plugin.cpp.o
+/opt/rh/devtoolset-7/root/usr/bin/ranlib libhistory_plugin.a
