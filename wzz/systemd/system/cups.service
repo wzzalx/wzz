@@ -1,0 +1,11 @@
+[Unit]
+Description=CUPS Printing Service
+After=network.target ypbind.service
+
+[Service]
+ExecStart=/usr/sbin/cupsd -f
+PrivateTmp=true
+
+[Install]
+Also=cups.socket cups.path
+WantedBy=multi-user.target printer.target

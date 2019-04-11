@@ -1,0 +1,62 @@
+# multipath wants the devmaps presented as meaninglful device names
+# so name them after their devmap name
+SUBSYSTEM!="block", GOTO="end_mpath"
+
+IMPORT{cmdline}="nompath"
+ENV{nompath}=="?*", GOTO="end_mpath"
+ENV{DEVTYPE}!="partition", GOTO="test_dev"
+IMPORT{parent}="DM_MULTIPATH_DEVICE_PATH"
+ENV{DM_MULTIPATH_DEVICE_PATH}=="1", ENV{ID_FS_TYPE}="none", \
+	ENV{SYSTEMD_READY}="0"
+GOTO="end_mpath"
+
+LABEL="test_dev"
+
+ENV{MPATH_SBIN_PATH}="/sbin"
+TEST!="$env{MPATH_SBIN_PATH}/multipath", ENV{MPATH_SBIN_PATH}="/usr/sbin"
+TEST!="/etc/multipath.conf", GOTO="check_kpartx"
+
+ACTION=="add", ENV{DM_MULTIPATH_DEVICE_PATH}!="1", \
+	PROGRAM=="$env{MPATH_SBIN_PATH}/multipath -c $tempnode", \
+	ENV{DM_MULTIPATH_DEVICE_PATH}="1", ENV{ID_FS_TYPE}="mpath_member"
+
+ENV{DM_MULTIPATH_DEVICE_PATH}=="1", ENV{DM_MULTIPATH_WIPE_PARTS}="1", \
+	RUN+="/sbin/partx -d --nr 1-1024 $env{DEVNAME}"
+
+ACTION!="change", GOTO="update_timestamp"
+IMPORT{db}="DM_MULTIPATH_TIMESTAMP"
+IMPORT{db}="DM_MULTIPATH_DEVICE_PATH"
+IMPORT{db}="DM_MULTIPATH_WIPE_PARTS"
+IMPORT{db}="DM_MULTIPATH_NEED_KPARTX"
+# Check if the device is part of a multipath device. the -T option just keeps
+# the old result if the timestamp hasn't changed.
+PROGRAM=="$env{MPATH_SBIN_PATH}/multipath -T $env{DM_MULTIPATH_TIMESTAMP}:$env{DM_MULTIPATH_DEVICE_PATH} -c $env{DEVNAME}", \
+	ENV{DM_MULTIPATH_DEVICE_PATH}="1", ENV{ID_FS_TYPE}="mpath_member", \
+	GOTO="update_timestamp"
+
+# If the device isn't part of a multipath device, clear this
+ENV{DM_MULTIPATH_DEVICE_PATH}=""
+ENV{DM_MULTIPATH_WIPE_PARTS}=""
+
+LABEL="update_timestamp"
+ENV{DM_MULTIPATH_DEVICE_PATH}=="1", ENV{SYSTEMD_READY}="0"
+ENV{DM_MULTIPATH_DEVICE_PATH}=="1", ENV{DM_MULTIPATH_WIPE_PARTS}!="1", \
+	ENV{DM_MULTIPATH_WIPE_PARTS}="1", \
+	RUN+="/sbin/partx -d --nr 1-1024 $env{DEVNAME}"
+
+IMPORT{file}="/run/multipathd/timestamp"
+
+LABEL="check_kpartx"
+KERNEL!="dm-*", GOTO="end_mpath"
+ENV{DM_UUID}=="mpath-?*|part[0-9]*-mpath-?*", OPTIONS+="link_priority=10"
+ACTION!="change", GOTO="end_mpath"
+ENV{DM_UUID}!="mpath-?*", GOTO="end_mpath"
+ENV{DM_SUBSYSTEM_UDEV_FLAG1}=="1", GOTO="end_mpath"
+ENV{DM_ACTIVATION}=="1", ENV{DM_MULTIPATH_NEED_KPARTX}="1"
+ENV{DM_SUSPENDED}=="1", GOTO="end_mpath"
+ENV{DM_ACTION}=="PATH_FAILED", GOTO="end_mpath"
+ENV{DM_NOSCAN}=="1", GOTO="end_mpath"
+ENV{DM_ACTIVATION}!="1", ENV{DM_MULTIPATH_NEED_KPARTX}!="1", GOTO="end_mpath"
+RUN+="$env{MPATH_SBIN_PATH}/kpartx -an $tempnode", \
+	ENV{DM_MULTIPATH_NEED_KPARTX}=""
+LABEL="end_mpath"

@@ -1,0 +1,13 @@
+[Unit]
+Description=Modem Manager
+
+[Service]
+Type=dbus
+BusName=org.freedesktop.ModemManager1
+ExecStart=/usr/sbin/ModemManager
+StandardError=null
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
+Alias=dbus-org.freedesktop.ModemManager1.service

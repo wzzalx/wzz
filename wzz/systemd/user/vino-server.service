@@ -1,0 +1,8 @@
+[Unit]
+Description=Vino VNC server
+
+[Service]
+Type=dbus
+BusName=org.gnome.Vino
+ExecStart=/usr/libexec/vino-server
+Restart=on-abnormal
