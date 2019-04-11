@@ -1,0 +1,53 @@
+Older RHEL 7 kernels try to early load microcode even inside virtual
+machine, which may lead to panic on some hypervisors.  In order to circumvent
+that, microcode is installed into a kernel-version-specific directory (which
+is not scanned by the dracut script, that constructs early microcode binary
+in initramfs, by default), and path to microcode files provided only in case
+initramfs is generated for the kernel version that properly handles early
+microcode inside a virtual machine (i.e. do not attempts yo load it).
+The versions of the kernel package that properly handle early microcode load
+inside a virtual machine are as follows:
+	RHEL 7.6: kernel-3.10.0-930 or newer;
+	RHEL 7.5: kernel-3.10.0-862.14.1 or newer;
+	RHEL 7.4: kernel-3.10.0-693.38.1 or newer;
+	RHEL 7.3: kernel-3.10.0-514.57.1 or newer.
+	RHEL 7.2: kernel-3.10.0-327.73.1 or newer.
+
+If you want to avoid adding this ucode for a specific kernel, please create
+"disallow-early-intel" file inside /lib/firmware/<kernel_version> directory
+and run dracut -f:
+
+    touch /lib/firmware/3.10.0-862.9.1/disallow-intel
+    /usr/libexec/microcode_ctl/update_ucode
+    dracut -f --kver 3.10.0-862.9.1
+
+If you want to skip processing of this microcode for all kernels, please create
+"disallow-early-intel" file inside the "/etc/microcode_ctl/ucode_with_caveats"
+directory and run dracut -f --regenerate-all:
+
+    mkdir -p /etc/microcode_ctl/ucode_with_caveats
+    touch /etc/microcode_ctl/ucode_with_caveats/disallow-intel
+    dracut -f --kver 3.10.0-862.9.1
+
+If you want to enforce addition of this microcode to initramfs for a specific
+kernel, please create "force-early-intel" file inside
+/lib/firmware/<kernel_version> directory and run
+dracut -f --kver "<kernel_version>":
+
+    modir -p/lib/firmware/3.10.0-862.9.1/
+    touch /lib/firmware/3.10.0-862.9.1/force-early-intel
+    dracut -f --kver 3.10.0-862.9.1
+
+If you want to enforce addition of this microcode for all kernels, please
+create "force-early-intel" file inside /etc/microcode_ctl/ucode_with_caveats
+directory and run dracut -f --kver "<kernel_version>":
+
+    mkdir -p /etc/microcode_ctl/ucode_with_caveats
+    touch /etc/microcode_ctl/ucode_with_caveats/force-early-intel
+    dracut -f --regenerate-all
+
+In order to override late load behaviour, the "early" part of file names should
+be replaced with "late".
+
+
+See /usr/share/doc/microcode_ctl/README.caveats for additional information.
