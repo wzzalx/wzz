@@ -1,0 +1,103 @@
+#!/bin/bash
+# -*- mode: shell-script; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
+# ex: ts=8 sw=4 sts=4 et filetype=sh
+
+check() {
+    local _fcoe_ctlr
+    [[ $hostonly ]] || [[ $mount_needs ]] && {
+        for c in /sys/bus/fcoe/devices/ctlr_* ; do
+            [ -L $c ] || continue
+            _fcoe_ctlr=$c
+        done
+        [ -z "$_fcoe_ctlr" ] && return 255
+    }
+
+    require_binaries dcbtool fipvlan lldpad ip readlink fcoemon fcoeadm || return 1
+
+    return 0
+}
+
+depends() {
+    echo network rootfs-block
+    return 0
+}
+
+installkernel() {
+    instmods fcoe 8021q edd
+}
+
+get_vlan_parent() {
+    local link=$1
+
+    [ -d $link ] || return
+    read iflink < $link/iflink
+    for if in /sys/class/net/* ; do
+	read idx < $if/ifindex
+	if [ $idx -eq $iflink ] ; then
+	    echo ${if##*/}
+	fi
+    done
+}
+
+# called by dracut
+cmdline() {
+
+    for c in /sys/bus/fcoe/devices/ctlr_* ; do
+        [ -L $c ] || continue
+        read enabled < $c/enabled
+        [ $enabled -eq 0 ] && continue
+        d=$(cd -P $c; echo $PWD)
+        i=${d%/*}
+        read mac < ${i}/address
+        s=$(dcbtool gc ${i##*/} dcb | sed -n 's/^DCB State:\t*\(.*\)/\1/p')
+        if [ -z "$s" ] ; then
+            p=$(get_vlan_parent ${i})
+            if [ "$p" ] ; then
+                s=$(dcbtool gc ${p} dcb | sed -n 's/^DCB State:\t*\(.*\)/\1/p')
+            fi
+        fi
+        if [ "$s" = "on" ] ; then
+            dcb="dcb"
+        else
+            dcb="nodcb"
+        fi
+
+        # Some Combined Network Adapters(CNAs) implement DCB in firmware.
+        # Do not run software-based DCB or LLDP on CNAs that implement DCB.
+        # If the network interface provides hardware DCB/DCBX capabilities,
+        # DCB_REQUIRED in "/etc/fcoe/cfg-xxx" is expected to set to "no".
+        #
+        # Force "nodcb" if there's any DCB_REQUIRED="no"(child or vlan parent).
+        grep -q "^[[:blank:]]*DCB_REQUIRED=\"no\"" /etc/fcoe/cfg-${i##*/} &>/dev/null
+        [ $? -eq 0 ] && dcb="nodcb"
+        if [ "$p" ] ; then
+            grep -q "^[[:blank:]]*DCB_REQUIRED=\"no\"" /etc/fcoe/cfg-${p} &>/dev/null
+            [ $? -eq 0 ] && dcb="nodcb"
+        fi
+
+        echo "fcoe=${mac}:${dcb}"
+    done
+}
+
+# called by dracut
+install() {
+    inst_multiple ip dcbtool fipvlan lldpad readlink lldptool fcoemon fcoeadm
+    inst_libdir_file 'libhbalinux.so*'
+    [[ -e /etc/hba.conf ]] && inst "/etc/hba.conf" "/etc/hba.conf"
+
+    mkdir -m 0755 -p "$initdir/var/lib/lldpad"
+    mkdir -m 0755 -p "$initdir/etc/fcoe"
+
+    if [[ $hostonly_cmdline == "yes" ]] ; then
+        local _fcoeconf=$(cmdline)
+        [[ $_fcoeconf ]] && printf "%s\n" "$_fcoeconf" >> "${initdir}/etc/cmdline.d/95fcoe.conf"
+    fi
+    inst "$moddir/fcoe-up.sh" "/sbin/fcoe-up"
+    inst "$moddir/fcoe-edd.sh" "/sbin/fcoe-edd"
+    inst "$moddir/fcoe-genrules.sh" "/sbin/fcoe-genrules.sh"
+    inst_hook pre-trigger 03 "$moddir/lldpad.sh"
+    inst_hook cmdline 99 "$moddir/parse-fcoe.sh"
+    inst_hook cleanup 90 "$moddir/cleanup-fcoe.sh"
+    dracut_need_initqueue
+}
+
