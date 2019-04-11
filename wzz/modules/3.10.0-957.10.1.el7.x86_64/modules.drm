@@ -1,0 +1,13 @@
+amdgpu.ko
+ast.ko
+bochs-drm.ko
+cirrus.ko
+gma500_gfx.ko
+i915.ko
+mgag200.ko
+nouveau.ko
+qxl.ko
+radeon.ko
+udl.ko
+virtio-gpu.ko
+vmwgfx.ko

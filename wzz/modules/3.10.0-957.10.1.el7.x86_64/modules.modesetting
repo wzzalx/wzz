@@ -1,0 +1,8 @@
+amdgpu.ko
+ast.ko
+bochs-drm.ko
+cirrus.ko
+gma500_gfx.ko
+mgag200.ko
+radeon.ko
+udl.ko

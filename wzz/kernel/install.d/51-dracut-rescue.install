@@ -1,0 +1,103 @@
+#!/bin/bash
+# -*- mode: shell-script; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
+# ex: ts=8 sw=4 sts=4 et filetype=sh
+
+export LANG=C
+
+COMMAND="$1"
+KERNEL_VERSION="$2"
+BOOT_DIR_ABS="${3%/*}/0-rescue"
+KERNEL_IMAGE="$4"
+
+
+dropindirs_sort()
+{
+    suffix=$1; shift
+    args=("$@")
+    files=$(
+        while (( $# > 0 )); do
+            for i in ${1}/*${suffix}; do
+                [[ -f $i ]] && echo ${i##*/}
+            done
+            shift
+        done | sort -Vu
+    )
+
+    for f in $files; do
+        for d in "${args[@]}"; do
+            if [[ -f "$d/$f" ]]; then
+                echo "$d/$f"
+                continue 2
+            fi
+        done
+    done
+}
+
+[[ -f /etc/os-release ]] && . /etc/os-release
+
+if [[ ! -f /etc/machine-id ]] || [[ ! -s /etc/machine-id ]]; then
+    systemd-machine-id-setup
+fi
+
+[[ -f /etc/machine-id ]] && read MACHINE_ID < /etc/machine-id
+
+if [[ -f /etc/kernel/cmdline ]]; then
+    readarray -t BOOT_OPTIONS < /etc/kernel/cmdline
+fi
+if ! [[ "${BOOT_OPTIONS[@]}" ]]; then
+    readarray -t BOOT_OPTIONS < /proc/cmdline
+fi
+if ! [[ $BOOT_OPTIONS ]]; then
+    exit 1
+fi
+
+LOADER_ENTRY="/boot/loader/entries/${MACHINE_ID}-0-rescue.conf"
+BOOT_DIR="/${MACHINE_ID}/0-rescue"
+
+ret=0
+
+case "$COMMAND" in
+    add)
+        for i in "/boot/loader/entries/${MACHINE_ID}-0-rescue.conf"; do
+            [[ -f $i ]] && exit 0
+        done
+
+        # source our config dir
+        for f in $(dropindirs_sort ".conf" "/etc/dracut.conf.d" "/usr/lib/dracut/dracut.conf.d"); do
+            [[ -e $f ]] && . "$f"
+        done
+
+        [[ $dracut_rescue_image != "yes" ]] && exit 0
+
+        [[ -d "$BOOT_DIR_ABS" ]] || mkdir -p "$BOOT_DIR_ABS"
+
+        if ! cp "$KERNEL_IMAGE" "$BOOT_DIR_ABS"/linux; then
+            echo "Can't copy '$KERNEL_IMAGE to '$BOOT_DIR_ABS/linux'!" >&2
+        fi
+
+        dracut --no-hostonly  -a "rescue" "$BOOT_DIR_ABS"/initrd "$2"
+        ((ret+=$?))
+
+        {
+            echo "title      $PRETTY_NAME - Rescue Image"
+            echo "version    $KERNEL_VERSION"
+            echo "machine-id $MACHINE_ID"
+            echo "options    ${BOOT_OPTIONS[@]} rd.auto=1"
+            echo "linux      $BOOT_DIR/linux"
+            echo "initrd     $BOOT_DIR/initrd"
+        } > $LOADER_ENTRY
+        ((ret+=$?))
+        ;;
+
+    remove)
+        exit 0
+        ;;
+
+    *)
+        usage
+        ret=1;;
+esac
+
+((ret+=$?))
+
+exit $ret
