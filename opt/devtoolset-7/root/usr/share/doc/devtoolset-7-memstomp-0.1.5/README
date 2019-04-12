@@ -1,0 +1,50 @@
+MEMSTOMP memcpy checker
+
+GIT:
+        git://fedorapeople.org/home/fedora/wcohen/public_git/memstomp
+
+GITWEB:
+	http://fedorapeople.org/gitweb?p=wcohen/public_git/memstomp;a=summary
+
+NOTES:
+	memstomp checks the operation of memcpy. In particular memstomp
+	warns when memcpy is used to copy overlapping regions of
+	memory (such as the problem encountered in
+	https://bugzilla.redhat.com/show_bug.cgi?id=638477)
+
+        Just use it as prefix for your usual command line and it will
+        check memcpy used in all child processes. Example:
+
+                memstomp gedit
+
+       The tool understands a --debug-info switch in which case the
+       backtraces generated will include debugging information such as
+       line numbers and source file names. This is not enabled by
+       default since generating those traces is not always safe in
+       situations where locks are taken or memory allocated as we do
+       it here. YMMV.
+
+       memstomp also has a '--kill' option that kills the application
+       at the first problem memcpy.
+
+       Note that valgrind can perform this type of check also.
+       memstomp merely lowers the overhead for this type of check.
+
+LICENSE:
+        LGPLv3+
+
+        Exception:
+
+        backtrace-symbols.c is GPLv2+. Which probably means that using
+        the --debug-info switch for memstomp might not be legally safe
+        for non-GPL-compatible applications. However, since that
+        module is independantly built into a seperate .so it should
+        still be safe using the profilers without this switch on such
+        software.
+
+AUTHORS:
+        Lennart Poettering
+        William Cohen
+
+REQUIREMENTS:
+        Recent gcc, glibc, Linux

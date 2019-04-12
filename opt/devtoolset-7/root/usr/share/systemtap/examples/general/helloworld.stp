@@ -1,0 +1,2 @@
+#!/opt/rh/devtoolset-7/root/usr/bin/stap
+probe oneshot { println("hello world") }
