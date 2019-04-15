@@ -1,1 +1,0 @@
-/opt/rh/devtoolset-7/root/usr/bin/g++   -Wall -fno-builtin-memcmp -O3 -DNDEBUG   CMakeFiles/dice.tmp.dir/dice.cpp.o  -o dice.tmp 

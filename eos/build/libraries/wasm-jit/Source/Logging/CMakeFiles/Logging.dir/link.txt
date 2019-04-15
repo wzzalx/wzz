@@ -1,2 +1,0 @@
-/opt/rh/devtoolset-7/root/usr/bin/ar qc libLogging.a  CMakeFiles/Logging.dir/Logging.cpp.o
-/opt/rh/devtoolset-7/root/usr/bin/ranlib libLogging.a

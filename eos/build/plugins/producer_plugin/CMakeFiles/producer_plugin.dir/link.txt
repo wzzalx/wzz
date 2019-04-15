@@ -1,2 +1,0 @@
-/opt/rh/devtoolset-7/root/usr/bin/ar qc libproducer_plugin.a  CMakeFiles/producer_plugin.dir/producer_plugin.cpp.o
-/opt/rh/devtoolset-7/root/usr/bin/ranlib libproducer_plugin.a

@@ -1,2 +1,0 @@
-/opt/rh/devtoolset-7/root/usr/bin/ar qc libappbase.a  CMakeFiles/appbase.dir/application.cpp.o
-/opt/rh/devtoolset-7/root/usr/bin/ranlib libappbase.a

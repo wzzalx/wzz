@@ -1,2 +1,0 @@
-/opt/rh/devtoolset-7/root/usr/bin/ar qc libchain_plugin.a  CMakeFiles/chain_plugin.dir/chain_plugin.cpp.o
-/opt/rh/devtoolset-7/root/usr/bin/ranlib libchain_plugin.a

@@ -1,1 +1,0 @@
-/opt/rh/devtoolset-7/root/usr/bin/g++   -Wall -fno-builtin-memcmp -O3 -DNDEBUG   CMakeFiles/deferred_test.tmp.dir/deferred_test.cpp.o  -o deferred_test.tmp  -L/root/opt/wasm/lib 

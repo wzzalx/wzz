@@ -1,2 +1,0 @@
-/opt/rh/devtoolset-7/root/usr/bin/ar qc ../../lib/libasmjs.a  CMakeFiles/asmjs.dir/asm_v_wasm.cpp.o CMakeFiles/asmjs.dir/shared-constants.cpp.o
-/opt/rh/devtoolset-7/root/usr/bin/ranlib ../../lib/libasmjs.a

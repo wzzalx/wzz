@@ -1,2 +1,0 @@
-/opt/rh/devtoolset-7/root/usr/bin/ar qc ../../lib/libast.a  CMakeFiles/ast.dir/ExpressionAnalyzer.cpp.o CMakeFiles/ast.dir/ExpressionManipulator.cpp.o
-/opt/rh/devtoolset-7/root/usr/bin/ranlib ../../lib/libast.a

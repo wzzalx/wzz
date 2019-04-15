@@ -1,1 +1,0 @@
-/opt/rh/devtoolset-7/root/usr/bin/g++   -Wall -fno-builtin-memcmp -O3 -DNDEBUG   CMakeFiles/test_api_db.tmp.dir/test_api_db.cpp.o  -o test_api_db.tmp 

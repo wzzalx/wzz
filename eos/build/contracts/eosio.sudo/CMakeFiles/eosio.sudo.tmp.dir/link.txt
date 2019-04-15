@@ -1,1 +1,0 @@
-/opt/rh/devtoolset-7/root/usr/bin/g++   -Wall -fno-builtin-memcmp -O3 -DNDEBUG   CMakeFiles/eosio.sudo.tmp.dir/eosio.sudo.cpp.o  -o eosio.sudo.tmp 
